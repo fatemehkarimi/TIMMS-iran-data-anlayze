@@ -1,6 +1,3 @@
-from select import select
-
-
 class Attribute:
     def __init__(self, background, variable, label,
                     level, detail, min_range=None, max_range=None):
@@ -12,3 +9,6 @@ class Attribute:
         self.min_range = min_range
         self.max_range = max_range
 
+
+    def set_options(self, options):
+        self.options = options

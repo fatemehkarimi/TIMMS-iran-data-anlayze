@@ -9,12 +9,16 @@ class Codebook:
 
         for key in self.df.keys():
             for idx, row in self.df[key].iterrows():
+                detail = ""
+                if isinstance(row[SheetStructure.VALUE_SCHEME_DETAILED], str):
+                    detail = row[SheetStructure.VALUE_SCHEME_DETAILED]
+
                 attr = Attribute(
                     key,
                     row[SheetStructure.VARIABLE],
                     row[SheetStructure.LABEL],
                     row[SheetStructure.LEVEL],
-                    row[SheetStructure.VALUE_SCHEME_DETAILED]
+                    detail
                 )
                 self.attribute_list.append(attr)
 
