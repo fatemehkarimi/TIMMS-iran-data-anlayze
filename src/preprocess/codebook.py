@@ -13,12 +13,23 @@ class Codebook:
                 if isinstance(row[SheetStructure.VALUE_SCHEME_DETAILED], str):
                     detail = row[SheetStructure.VALUE_SCHEME_DETAILED]
 
+                min_range = None
+                max_range = None
+
+                if not pd.isna(row[SheetStructure.RANGE_MINIMUM]):
+                    min_range = int(row[SheetStructure.RANGE_MINIMUM])
+
+                if not pd.isna(row[SheetStructure.RANGE_MAXIMUM]):
+                    max_range = int(row[SheetStructure.RANGE_MAXIMUM])
+
                 attr = Attribute(
                     key,
                     row[SheetStructure.VARIABLE],
                     row[SheetStructure.LABEL],
                     row[SheetStructure.LEVEL],
-                    detail
+                    detail,
+                    min_range,
+                    max_range
                 )
                 self.attribute_list.append(attr)
 
