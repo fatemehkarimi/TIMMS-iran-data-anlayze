@@ -28,3 +28,4 @@ class BackgroundVariable:
     TEACHER = "BTMM7"
     SCHOOL = "BCGM7"
 
+ID_FIELDS = ['IDCNTRY', 'IDBOOK', 'IDSCHOOL', 'IDCLASS', 'IDSTUD']
