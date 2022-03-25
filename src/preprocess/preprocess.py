@@ -2,7 +2,7 @@ from matplotlib.pyplot import axis
 import pandas as pd
 import dataset.datasetConst as dataConst
 from codebook import Codebook
-from preprocess_nominal import fill_missing_value
+from preprocess_categoral import fill_missing_value
 
 def preprocess_nominal_attrs(df, attr_list):
     bad_nominal_labels = dataConst.ID_FIELDS
@@ -13,12 +13,15 @@ def preprocess_nominal_attrs(df, attr_list):
     )
 
     for attr in attr_list:
-        if attr.level == dataConst.AttrbuteLevel.NOMINAL \
-            and attr.variable not in bad_nominal_labels:
+        if (
+            attr.variable not in bad_nominal_labels 
+            and (attr.level == dataConst.AttrbuteLevel.NOMINAL
+            or attr.level == dataConst.AttrbuteLevel.ORDINAL)
+        ):
             filtered_df = fill_missing_value(filtered_df, attr)
 
     filtered_df = pd.concat([df[bad_nominal_labels], filtered_df], axis=1)
-    return df
+    return filtered_df
 
 
 def main():

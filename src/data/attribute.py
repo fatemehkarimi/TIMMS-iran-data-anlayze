@@ -1,3 +1,5 @@
+from operator import le
+import dataset.datasetConst as dataConst
 class Attribute:
     def __init__(self, background, variable, label,
                     level, detail, min_range=None, max_range=None):
@@ -9,6 +11,7 @@ class Attribute:
         self.min_range = min_range
         self.max_range = max_range
         self.options = []
+        self.extract_options()
 
 
     def set_options(self, options):
@@ -26,3 +29,19 @@ class Attribute:
         if self.max_range is None:
             return len(self.options)
         return self.max_range
+
+    def extract_options(self):
+        if (self.level != dataConst.AttrbuteLevel.NOMINAL
+            and self.level != dataConst.AttrbuteLevel.ORDINAL):
+            return
+
+        detail = self.detail
+        option_str_list = detail.split(";")
+
+        options = []
+        for option in option_str_list:
+            option_text = option.split(':')
+            if len(option_text) >= 2:
+                options.append(option_text[1].strip())
+
+        self.set_options(options)
