@@ -17,24 +17,30 @@ def fill_missing_value(df, attr):
 
 
 def is_attr_too_null(df, attr):
-    null_df = df.loc[lambda x : x[attr.variable] > attr.get_max_range()]
-    if len(null_df.index) / len(df.index) >= ALMOST_NULL_ATTRIBUTE_RATIO:
+    num_null = len(
+        df.loc[lambda x :
+                (x[attr.variable] > attr.get_max_range())
+                    | (x[attr.variable] < attr.get_min_range())].index)
+
+    num_null += df[attr.variable].isna().sum()
+    if num_null / len(df.index) >= ALMOST_NULL_ATTRIBUTE_RATIO:
         return True
     return False
 
 
 def get_data_median_for(df, attr):
-    valid_df = df.loc[lambda x : x[attr.variable] <= attr.get_max_range()]
+    valid_df = df.loc[
+        lambda x : (x[attr.variable] <= attr.get_max_range())
+                    | (x[attr.variable] >= attr.get_min_range())]
     med = valid_df[attr.variable].median()
     return med
 
 
 def replace_invalid_values(df, attr, surrogate_value):
     df[attr.variable] = df[attr.variable].fillna(surrogate_value)
-    valid = df.loc[lambda x : x[attr.variable] > attr.get_max_range()]
-
     df.loc[
-        lambda x : x[attr.variable] > attr.get_max_range(),
+        lambda x : (x[attr.variable] < attr.get_min_range())
+                    | (x[attr.variable] > attr.get_max_range()),
         attr.variable] = surrogate_value
 
 
