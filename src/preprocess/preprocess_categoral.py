@@ -38,7 +38,7 @@ def replace_invalid_values(df, attr, surrogate_value):
         attr.variable] = surrogate_value
 
 
-def log_attr_removed(removed_attribute):
+def log_attr_removed(attr):
     with open("preprocess_nominal.log", "a") as f:
         f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-            + ": " + "attribute " + removed_attribute.variable + "\tremoved\n")
+            + ": " + "attribute " + attr.variable + "\tremoved\n")
