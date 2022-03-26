@@ -1,3 +1,4 @@
+from datetime import datetime
 import pandas as pd
 
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.2
@@ -14,11 +15,13 @@ def fill_missing_value(df, attr):
 
     return df
 
+
 def is_attr_too_null(df, attr):
     null_df = df.loc[lambda x : x[attr.variable] > attr.get_max_range()]
     if len(null_df.index) / len(df.index) >= ALMOST_NULL_ATTRIBUTE_RATIO:
         return True
     return False
+
 
 def get_data_median_for(df, attr):
     valid_df = df.loc[lambda x : x[attr.variable] <= attr.get_max_range()]
@@ -37,4 +40,5 @@ def replace_invalid_values(df, attr, surrogate_value):
 
 def log_attr_removed(removed_attribute):
     with open("preprocess_nominal.log", "a") as f:
-        f.write(removed_attribute.variable + "\n")
+        f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+            + ": " + "attribute " + removed_attribute.variable + "\tremoved\n")
