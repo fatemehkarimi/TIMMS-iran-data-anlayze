@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 from preprocess_level import LevelPreprocess
-from preprocess_scale import ALMOST_NULL_ATTRIBUTE_RATIO
 
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.5
+INTRODUCE_OPTION_RATIO = 0.1
 
 class NominalPreprocess(LevelPreprocess):
     def fill_missing_value(self, df, attr):
@@ -19,7 +19,14 @@ class NominalPreprocess(LevelPreprocess):
             return df
 
         mod = self.get_mod(df, attr)
-        df[attr.variable] = df[attr.variable].fillna(mod)
+        if df[attr.variable].isna().sum() > INTRODUCE_OPTION_RATIO * len(df.index):
+            options = attr.get_options()
+            options.append('UNKNOWN')
+            attr.set_options(options)
+            df[attr.variable] = df[attr.variable].fillna(len(options))
+            self.log_option_added(attr, 'UNKNOWN')
+        else:
+            df[attr.variable] = df[attr.variable].fillna(mod)
         return df
 
     def replace_out_range_values(self, df, attr, value):
@@ -45,3 +52,7 @@ class NominalPreprocess(LevelPreprocess):
                 max_value = i
 
         return max_value
+
+    def log_option_added(self, attr, option):
+        with open(self.log_file, 'a') as f:
+            f.write(f"option {option} added for attribute {attr.variable}\n")
