@@ -1,6 +1,4 @@
-from datetime import datetime
 import pandas as pd
-
 from preprocess_level import LevelPreprocess
 
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.2
@@ -46,8 +44,3 @@ class OrdinalPreprocess(LevelPreprocess):
                         | (x[attr.variable] > attr.get_max_range()),
             attr.variable] = surrogate_value
 
-
-    def log_attr_removed(self, attr):
-        with open("preprocess_nominal.log", "a") as f:
-            f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-                + ": " + "attribute " + attr.variable + "\tremoved\n")

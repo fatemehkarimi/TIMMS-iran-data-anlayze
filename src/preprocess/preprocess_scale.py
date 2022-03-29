@@ -8,7 +8,6 @@ OUTLIER_FACTOR = 1.5
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.3
 
 class ScalePreprocess(LevelPreprocess):
-
     def fill_missing_value(self, df, attr):
         if attr.variable not in df.columns:
             self.log_key_not_exist(attr)
@@ -63,15 +62,3 @@ class ScalePreprocess(LevelPreprocess):
         if p <= 0.05:
             return False
         return True
-
-
-    def log_key_not_exist(self, attr):
-        with open('preprocess_scale.log', 'a') as f:
-            f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-                + ": " + 'key ' + attr.variable + '\tdoes not exists in dataframe\n')
-
-
-    def log_attr_removed(self, attr):
-        with open("preprocess_nominal.log", "a") as f:
-            f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-                + ": " + "attribute " + attr.variable + "\tremoved\n")
