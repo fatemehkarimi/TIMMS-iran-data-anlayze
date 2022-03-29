@@ -2,27 +2,23 @@ from matplotlib.pyplot import axis
 import pandas as pd
 import dataset.datasetConst as dataConst
 from codebook import Codebook
-import preprocess_categoral as process_cat
+import preprocess_ordinal as process_cat
 import preprocess_scale as process_scale
 
-def preprocess_nominal_attrs(df, attr_list):
-    bad_nominal_labels = dataConst.ID_FIELDS
-
-    filtered_df = df.drop(
-        labels=bad_nominal_labels,
-        axis=True
-    )
-
+def preprocess_ordinal_attrs(df, attr_list):
     for attr in attr_list:
-        if attr.variable not in bad_nominal_labels:
-            if (attr.level == dataConst.AttrbuteLevel.NOMINAL
-                or attr.level == dataConst.AttrbuteLevel.ORDINAL):
-                filtered_df = process_cat.fill_missing_value(filtered_df, attr)
-            elif attr.level == dataConst.AttrbuteLevel.SCALE:
-                filtered_df = process_scale.fill_missing_value(filtered_df, attr)
+        if attr.variable not in dataConst.ID_FIELDS:
+            if attr.level == dataConst.AttrbuteLevel.ORDINAL:
+                df = process_cat.fill_missing_value(df, attr)
+    return df
 
-    filtered_df = pd.concat([df[bad_nominal_labels], filtered_df], axis=1)
-    return filtered_df
+
+def preprocess_scale_attrs(df, attr_list):
+    for attr in attr_list:
+        if attr.variable not in dataConst.ID_FIELDS:
+            if attr.level == dataConst.AttrbuteLevel.SCALE:
+                df = process_scale.fill_missing_value(df, attr)
+    return df
 
 
 def main():
@@ -30,8 +26,15 @@ def main():
     attr_list = codebook.get_attribute_list()
 
     df = pd.read_excel(dataConst.data_file)
-    df = preprocess_nominal_attrs(df, attr_list)
-    df.to_excel("valid.xlsx")
+    filtered_df = df.drop(
+        labels=dataConst.ID_FIELDS,
+        axis=True
+    )
+    filtered_df = preprocess_ordinal_attrs(filtered_df, attr_list)
+    filtered_df = preprocess_scale_attrs(filtered_df, attr_list)
+
+    validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
+    validated_df.to_excel("valid.xlsx")
 
 
 if __name__ == "__main__":
