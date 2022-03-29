@@ -1,8 +1,9 @@
 import pandas as pd
 from codebook import Codebook
+import dataset.datasetConst as dataConst
 from preprocess_scale import ScalePreprocess
 from preprocess_ordinal import OrdinalPreprocess
-import dataset.datasetConst as dataConst
+from preprocess_nominal import NominalPreprocess
 
 
 def preprocess_by_level(df, attr_list, level, preprocessor):
@@ -34,6 +35,13 @@ def main():
         attr_list,
         dataConst.AttrbuteLevel.SCALE,
         ScalePreprocess())
+
+    filtered_df = preprocess_by_level(
+        filtered_df,
+        attr_list,
+        dataConst.AttrbuteLevel.NOMINAL,
+        NominalPreprocess()
+    )
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
     validated_df.to_excel("valid.xlsx")
