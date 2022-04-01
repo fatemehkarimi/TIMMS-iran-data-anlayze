@@ -8,7 +8,13 @@ OUTLIER_FACTOR = 1.5
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.3
 
 class ScalePreprocess(LevelPreprocess):
-    def fill_missing_value(self, df, attr):
+    def fill_missing_value(self, df, attr_list):
+        result_df = df
+        for attr in attr_list:
+            result_df = self.fill_missing_value_for_attr(result_df, attr)
+        return result_df
+
+    def fill_missing_value_for_attr(self, df, attr):
         if attr.variable not in df.columns:
             self.log_key_not_exist(attr)
             return df
@@ -29,13 +35,11 @@ class ScalePreprocess(LevelPreprocess):
         df[attr.variable] = df[attr.variable].fillna(surrogate_value)
         return df
 
-
     def is_attr_too_null(self, df, attr):
         num_nulls = df[attr.variable].isna().sum()
         if num_nulls / len(df.index) >= ALMOST_NULL_ATTRIBUTE_RATIO:
             return True
         return False
-
 
     def get_outlier_range(self, df, attr):
         col_df = df[attr.variable]
@@ -47,7 +51,6 @@ class ScalePreprocess(LevelPreprocess):
         max_range = q3 + OUTLIER_FACTOR * iqr
         
         return min_range, max_range
-
 
     def replace_outliers(self, df, attr, min_valid_value, max_valid_value, value):
         df.loc[
@@ -62,3 +65,30 @@ class ScalePreprocess(LevelPreprocess):
         if p <= 0.05:
             return False
         return True
+
+    def get_correlation_matrix(self, df, attr_list):
+        scale_columns = [
+            attr.variable for attr in attr_list if attr.variable in df.columns]
+
+        scale_df = df[scale_columns]
+        correlations = scale_df.corr(method='pearson')
+        return correlations
+
+    def visualize_correlation(self, df, attr_list):
+        scale_columns = [
+            attr.variable for attr in attr_list if attr.variable in df.columns]
+
+        corr_matrix = self.get_correlation_matrix(df)
+        super().plot_correlation(
+            corr_matrix, 'scale_correlation.png', scale_columns)
+
+    def filter_correlated_columns(self, df, attr_list):
+        corr_matrix = self.get_correlation_matrix(df, attr_list)
+        redundent_attrs = set()
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i):
+                if abs(corr_matrix.iloc[i, j]) > 0.8:
+                    colname = corr_matrix.columns[i]
+                    redundent_attrs.add(colname)
+
+        return df.drop(labels=list(redundent_attrs), axis=1)

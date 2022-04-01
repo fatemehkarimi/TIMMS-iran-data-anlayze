@@ -4,7 +4,13 @@ from preprocess_level import LevelPreprocess
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.2
 
 class OrdinalPreprocess(LevelPreprocess):
-    def fill_missing_value(self, df, attr):
+    def fill_missing_value(self, df, attr_list):
+        result_df = df
+        for attr in attr_list:
+            result_df = self.fill_missing_value_for_col(result_df, attr)
+        return result_df
+
+    def fill_missing_value_for_col(self, df, attr):
         pd.to_numeric(df[attr.variable])
 
         if self.is_attr_too_null(df, attr):
@@ -15,7 +21,6 @@ class OrdinalPreprocess(LevelPreprocess):
             self.replace_invalid_values(df, attr, med)
 
         return df
-
 
     def is_attr_too_null(self, df, attr):
         num_null = len(

@@ -15,7 +15,7 @@ class SheetStructure:
     VALUE_SCHEME_DETAILED = 'Value Scheme Detailed'
 
 
-class AttrbuteLevel:
+class AttributeLevel:
     ORDINAL = "Ordinal"
     NOMINAL = "Nominal"
     SCALE = "Scale"

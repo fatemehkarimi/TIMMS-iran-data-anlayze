@@ -6,7 +6,13 @@ ALMOST_NULL_ATTRIBUTE_RATIO = 0.5
 INTRODUCE_OPTION_RATIO = 0.1
 
 class NominalPreprocess(LevelPreprocess):
-    def fill_missing_value(self, df, attr):
+    def fill_missing_value(self, df, attr_list):
+        result_df = df
+        for attr in attr_list:
+            result_df = self.fill_missing_value_by_col(result_df, attr)
+        return result_df
+
+    def fill_missing_value_by_col(self, df, attr):
         if attr.variable not in df.columns:
             self.log_key_not_exist(attr)
             return df

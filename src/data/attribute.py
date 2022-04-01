@@ -31,8 +31,8 @@ class Attribute:
         return self.max_range
 
     def extract_options(self):
-        if (self.level != dataConst.AttrbuteLevel.NOMINAL
-            and self.level != dataConst.AttrbuteLevel.ORDINAL):
+        if (self.level != dataConst.AttributeLevel.NOMINAL
+            and self.level != dataConst.AttributeLevel.ORDINAL):
             return
 
         detail = self.detail
