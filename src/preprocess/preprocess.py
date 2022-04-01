@@ -14,21 +14,22 @@ def preprocess_by_level(df, attr_list, level, preprocessor):
                 df = preprocessor.fill_missing_value(df, attr)
     return df
 
-def detect_redundency_nominal(df, attr_list):
-    nominal_columns = [
+def visualize_correlation_scale(df, attr_list):
+    scale_columns = [
         attr.variable for attr in attr_list if attr.variable in df.columns]
-
-    nominal_df = df[nominal_columns]
-    correlations = nominal_df.corr()
-    fig = plt.figure(figsize=(150, 150))
+    
+    scale_df = df[scale_columns]
+    correlations = scale_df.corr(method='pearson')
+    fig = plt.figure(figsize=(10.41, 7.29))
     ax = fig.add_subplot(111)
     cax = ax.matshow(correlations, vmin=-1, vmax=1)
     fig.colorbar(cax)
-    ticks = np.arange(0, len(nominal_df.columns), 1)
+    ticks = np.arange(0, len(scale_columns), 1)
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
-    plt.savefig('nominal_correlation.png')
-
+    ax.set_xticklabels(scale_columns)
+    ax.set_yticklabels(scale_columns)
+    plt.savefig('scale_correlation.png')
 
 def main():
     codebook = Codebook()
@@ -59,13 +60,13 @@ def main():
         NominalPreprocess()
     )
 
-    nominal_attr_list = []
+    scale_attr_list = []
     for attr in attr_list:
-        if (attr.level == dataConst.AttrbuteLevel.NOMINAL
+        if (attr.level == dataConst.AttrbuteLevel.SCALE
             and attr.variable not in dataConst.ID_FIELDS):
-            nominal_attr_list.append(attr)
+            scale_attr_list.append(attr)
     
-    detect_redundency_nominal(filtered_df, nominal_attr_list)
+    visualize_correlation_scale(filtered_df, scale_attr_list)
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
     validated_df.to_excel("valid.xlsx")
