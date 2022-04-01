@@ -21,6 +21,14 @@ def visualize_correlation_scale(df, attr_list):
         attr.variable for attr in attr_list if attr.variable in df.columns]
     scale_df = df[scale_columns]
     correlations = scale_df.corr(method='pearson')
+
+    correlated_attr = set()
+    for i in range(len(correlations.columns)):
+        for j in range(i):
+            if abs(correlations.iloc[i, j]) > 0.8:
+                colname = correlations.columns[i]
+                correlated_attr.add(colname)
+
     plot_correlation(correlations, 'scale_correlation.png', scale_columns)
 
 
@@ -29,6 +37,14 @@ def visualize_correlation_ordinal(df, attr_list):
         attr.variable for attr in attr_list if attr.variable in df.columns]
     ordinal_df = df[ordinal_columns]
     correlations = ordinal_df.corr(method='spearman')
+
+    correlated_attr = set()
+    for i in range(len(correlations.columns)):
+        for j in range(i):
+            if abs(correlations.iloc[i, j]) > 0.8:
+                colname = correlations.columns[i]
+                correlated_attr.add(colname)
+
     plot_correlation(correlations, 'ordinal_correlation.png')
 
 
