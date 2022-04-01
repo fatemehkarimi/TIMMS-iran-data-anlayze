@@ -71,14 +71,13 @@ class ScalePreprocess(LevelPreprocess):
             attr.variable for attr in attr_list if attr.variable in df.columns]
 
         scale_df = df[scale_columns]
-        correlations = scale_df.corr(method='pearson')
-        return correlations
+        return scale_df.corr(method='pearson')
 
     def visualize_correlation(self, df, attr_list):
         scale_columns = [
             attr.variable for attr in attr_list if attr.variable in df.columns]
 
-        corr_matrix = self.get_correlation_matrix(df)
+        corr_matrix = self.get_correlation_matrix(df, attr_list)
         super().plot_correlation(
             corr_matrix, 'scale_correlation.png', scale_columns)
 

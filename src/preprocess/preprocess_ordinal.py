@@ -49,3 +49,16 @@ class OrdinalPreprocess(LevelPreprocess):
                         | (x[attr.variable] > attr.get_max_range()),
             attr.variable] = surrogate_value
 
+    def get_correlation_matrix(self, df, attr_list):
+        ordinal_columns = [
+            attr.variable for attr in attr_list if attr.variable in df.columns]
+        ordinal_df = df[ordinal_columns]
+        return ordinal_df.corr(method='spearman')
+
+    def visualize_correlation(self, df, attr_list):
+        ordinal_columns = [
+            attr.variable for attr in attr_list if attr.variable in df.columns]
+
+        corr_matrix = self.get_correlation_matrix(df, attr_list)
+        super().plot_correlation(
+            corr_matrix, 'ordinal_correlation.png')

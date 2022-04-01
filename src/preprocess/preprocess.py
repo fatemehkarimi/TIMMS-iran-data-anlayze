@@ -5,61 +5,22 @@ import dataset.datasetConst as dataConst
 from preprocess_scale import ScalePreprocess
 from preprocess_ordinal import OrdinalPreprocess
 from preprocess_nominal import NominalPreprocess
-import matplotlib.pyplot as plt
-import numpy as np
 
-def preprocess_by_level(df, attr_list, level, preprocessor):
-    for attr in attr_list:
-        if attr.variable not in dataConst.ID_FIELDS:
-            if attr.level == level:
-                df = preprocessor.fill_missing_value(df, attr)
+def fill_null_values(df, attr_list, level, preprocessor):
+    level_attrs = [attr for attr in attr_list 
+        if (attr.level == level
+            and attr.variable not in dataConst.ID_FIELDS)]
+
+    df = preprocessor.fill_missing_value(df, level_attrs)
     return df
 
 
-def visualize_correlation_scale(df, attr_list):
-    scale_columns = [
-        attr.variable for attr in attr_list if attr.variable in df.columns]
-    scale_df = df[scale_columns]
-    correlations = scale_df.corr(method='pearson')
-
-    correlated_attr = set()
-    for i in range(len(correlations.columns)):
-        for j in range(i):
-            if abs(correlations.iloc[i, j]) > 0.8:
-                colname = correlations.columns[i]
-                correlated_attr.add(colname)
-
-    plot_correlation(correlations, 'scale_correlation.png', scale_columns)
-
-
-def visualize_correlation_ordinal(df, attr_list):
-    ordinal_columns = [
-        attr.variable for attr in attr_list if attr.variable in df.columns]
-    ordinal_df = df[ordinal_columns]
-    correlations = ordinal_df.corr(method='spearman')
-
-    correlated_attr = set()
-    for i in range(len(correlations.columns)):
-        for j in range(i):
-            if abs(correlations.iloc[i, j]) > 0.8:
-                colname = correlations.columns[i]
-                correlated_attr.add(colname)
-
-    plot_correlation(correlations, 'ordinal_correlation.png')
-
-
-def plot_correlation(correlations, filename, labels=None):
-    fig = plt.figure(figsize=(10.41, 7.29))
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(correlations, vmin=-1, vmax=1)
-    fig.colorbar(cax)
-    if labels:
-        ticks = np.arange(0, len(labels), 1)
-        ax.set_xticks(ticks)
-        ax.set_yticks(ticks)
-        ax.set_xticklabels(labels)
-        ax.set_yticklabels(labels)
-    plt.savefig(filename)
+def visualize_correlation(df, attr_list, level, preprocessor):
+    level_attrs = [attr for attr in attr_list 
+        if (attr.level == level
+            and attr.variable not in dataConst.ID_FIELDS)]
+    
+    preprocessor.visualize_correlation(df, level_attrs)
 
 
 def main():
@@ -72,37 +33,39 @@ def main():
         axis=True
     )
 
-    filtered_df = preprocess_by_level(
+    scale_preprocess = ScalePreprocess()
+    nominal_preprocess = NominalPreprocess()
+    ordinal_preprocess = OrdinalPreprocess()
+
+    filtered_df = fill_null_values(
         filtered_df,
         attr_list,
-        dataConst.AttrbuteLevel.ORDINAL,
-        OrdinalPreprocess())
+        dataConst.AttributeLevel.ORDINAL,
+        ordinal_preprocess)
 
-    filtered_df = preprocess_by_level(
+    filtered_df = fill_null_values(
         filtered_df,
         attr_list,
-        dataConst.AttrbuteLevel.SCALE,
-        ScalePreprocess())
+        dataConst.AttributeLevel.SCALE,
+        scale_preprocess)
 
-    filtered_df = preprocess_by_level(
+    filtered_df = fill_null_values(
         filtered_df,
         attr_list,
-        dataConst.AttrbuteLevel.NOMINAL,
-        NominalPreprocess()
-    )
+        dataConst.AttributeLevel.NOMINAL,
+        nominal_preprocess)
 
-    scale_attr_list = []
-    ordinal_attr_list = []
-    for attr in attr_list:
-        if (attr.level == dataConst.AttrbuteLevel.SCALE
-            and attr.variable not in dataConst.ID_FIELDS):
-            scale_attr_list.append(attr)
-        elif (attr.level == dataConst.AttrbuteLevel.ORDINAL
-            and attr.variable not in dataConst.ID_FIELDS):
-            ordinal_attr_list.append(attr)
-    
-    visualize_correlation_scale(filtered_df, scale_attr_list)
-    visualize_correlation_ordinal(filtered_df, ordinal_attr_list)
+
+    visualize_correlation(
+        filtered_df, attr_list,
+        dataConst.AttributeLevel.SCALE,
+        scale_preprocess)
+
+    visualize_correlation(
+        filtered_df,
+        attr_list,
+        dataConst.AttributeLevel.ORDINAL,
+        ordinal_preprocess)
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
     validated_df.to_excel("valid.xlsx")
