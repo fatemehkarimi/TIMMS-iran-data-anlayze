@@ -1,7 +1,7 @@
 from warnings import filters
 import pandas as pd
-from codebook import Codebook
 import dataset.datasetConst as dataConst
+from data.codebook import Codebook
 from preprocess_scale import ScalePreprocess
 from preprocess_ordinal import OrdinalPreprocess
 from preprocess_nominal import NominalPreprocess
@@ -91,6 +91,15 @@ def filter_correlated_nominal_scale_attributes(df, attr_list):
     return df.drop(labels=list(redundent_attrs), axis=1)
 
 
+def replace_final_score_values(df):
+    df.loc[lambda x : x['finalscore'] == 'A', 'finalscore'] = 5
+    df.loc[lambda x : x['finalscore'] == 'B', 'finalscore'] = 4
+    df.loc[lambda x : x['finalscore'] == 'C', 'finalscore'] = 3
+    df.loc[lambda x : x['finalscore'] == 'D', 'finalscore'] = 2
+    df.loc[lambda x : x['finalscore'] == 'E', 'finalscore'] = 1
+    return df
+
+
 def main():
     codebook = Codebook()
     attr_list = codebook.get_attribute_list()
@@ -135,8 +144,10 @@ def main():
         dataConst.AttributeLevel.SCALE,
         scale_preprocess)
 
-    visualize_nominal_scale_correlatin(filtered_df, attr_list)
-    filtered_df = filter_correlated_nominal_scale_attributes(filtered_df, attr_list)
+    # visualize_nominal_scale_correlatin(filtered_df, attr_list)
+    # filtered_df = filter_correlated_nominal_scale_attributes(filtered_df, attr_list)
+
+    filtered_df = replace_final_score_values(filtered_df)
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
     validated_df.to_excel("valid.xlsx")
