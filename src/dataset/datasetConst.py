@@ -28,4 +28,14 @@ class BackgroundVariable:
     TEACHER = "BTMM7"
     SCHOOL = "BCGM7"
 
-ID_FIELDS = ['IDCNTRY', 'IDBOOK', 'IDSCHOOL', 'IDCLASS', 'IDSTUD']
+
+class Fields:
+    FINAL_SCORE = 'finalscore'
+    ID_COUNTRY = 'IDCNTRY'
+    ID_BOOK = 'IDBOOK'
+    ID_SCHOOL = 'IDSCHOOL'
+    ID_CLASS = 'IDCLASS'
+    ID_STUDENT = 'IDSTUD'
+
+ID_FIELDS = [Fields.ID_COUNTRY, Fields.ID_BOOK,
+                Fields.ID_SCHOOL, Fields.ID_CLASS, Fields.ID_STUDENT]
