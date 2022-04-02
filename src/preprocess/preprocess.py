@@ -1,4 +1,4 @@
-from cProfile import label
+from warnings import filters
 import pandas as pd
 from codebook import Codebook
 import dataset.datasetConst as dataConst
@@ -21,6 +21,13 @@ def visualize_correlation(df, attr_list, level, preprocessor):
             and attr.variable not in dataConst.ID_FIELDS)]
     
     preprocessor.visualize_correlation(df, level_attrs)
+
+def filter_correlated_attributes(df, attr_list, level, preprocessor):
+    level_attrs = [attr for attr in attr_list 
+        if (attr.level == level
+            and attr.variable not in dataConst.ID_FIELDS)]
+
+    return preprocessor.filter_correlated_columns(df, level_attrs)
 
 
 def main():
@@ -56,16 +63,28 @@ def main():
         nominal_preprocess)
 
 
-    visualize_correlation(
-        filtered_df, attr_list,
-        dataConst.AttributeLevel.SCALE,
-        scale_preprocess)
+    # visualize_correlation(
+    #     filtered_df, attr_list,
+    #     dataConst.AttributeLevel.SCALE,
+    #     scale_preprocess)
 
-    visualize_correlation(
+    # visualize_correlation(
+    #     filtered_df,
+    #     attr_list,
+    #     dataConst.AttributeLevel.ORDINAL,
+    #     ordinal_preprocess)
+
+    filtered_df = filter_correlated_attributes(
         filtered_df,
         attr_list,
         dataConst.AttributeLevel.ORDINAL,
         ordinal_preprocess)
+
+    filtered_df = filter_correlated_attributes(
+        filtered_df,
+        attr_list,
+        dataConst.AttributeLevel.SCALE,
+        scale_preprocess)
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
     validated_df.to_excel("valid.xlsx")

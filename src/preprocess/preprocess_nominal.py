@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import chi2_contingency
 from preprocess_level import LevelPreprocess
 
 ALMOST_NULL_ATTRIBUTE_RATIO = 0.5
@@ -62,3 +63,22 @@ class NominalPreprocess(LevelPreprocess):
     def log_option_added(self, attr, option):
         with open(self.log_file, 'a') as f:
             f.write(f"option {option} added for attribute {attr.variable}\n")
+
+    def calc_chi_square(self, col1, col2):
+        contingency = pd.crosstab(col1, col2)
+        stat, p, dof, expected = chi2_contingency(contingency)
+        return p <= 0.05
+
+    def get_correlation_matrix(self, df, attr_list):
+        nominal_columns = [
+            attr.variable for attr in attr_list if attr.variable in df.columns]
+        nominal_df = df[nominal_columns]
+        return nominal_df.corr(method=self.calc_chi_square)
+
+    def visualize_correlation(self, df, attr_list):
+        nominal_columns = [
+            attr.variable for attr in attr_list if attr.variable in df.columns]
+
+        corr_matrix = self.get_correlation_matrix(df, attr_list)
+        super().plot_correlation(
+            corr_matrix, 'nominal_correlation.png')

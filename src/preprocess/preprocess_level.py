@@ -27,7 +27,22 @@ class LevelPreprocess:
         plt.savefig(filename)
 
     def filter_correlated_columns(self, df, attr_list):
-        raise NotImplementedError
+        corr_matrix = self.get_correlation_matrix(df, attr_list)
+        redundent_attrs = set()
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i):
+                if abs(corr_matrix.iloc[i, j]) > 0.8:
+                    colname = corr_matrix.columns[i]
+                    redundent_attrs.add(colname)
+
+        for attr in redundent_attrs:
+            self.log_redundent_attr_removed(attr)
+        return df.drop(labels=list(redundent_attrs), axis=1)
+
+    def log_redundent_attr_removed(self, attr_variable):
+        with open(self.log_file, "a") as f:
+            f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+                + ": " + "attribute " + attr_variable + "\t is redundent\n")
 
     def log_attr_removed(self, attr):
         with open(self.log_file, "a") as f:

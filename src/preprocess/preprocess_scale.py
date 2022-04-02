@@ -81,13 +81,3 @@ class ScalePreprocess(LevelPreprocess):
         super().plot_correlation(
             corr_matrix, 'scale_correlation.png', scale_columns)
 
-    def filter_correlated_columns(self, df, attr_list):
-        corr_matrix = self.get_correlation_matrix(df, attr_list)
-        redundent_attrs = set()
-        for i in range(len(corr_matrix.columns)):
-            for j in range(i):
-                if abs(corr_matrix.iloc[i, j]) > 0.8:
-                    colname = corr_matrix.columns[i]
-                    redundent_attrs.add(colname)
-
-        return df.drop(labels=list(redundent_attrs), axis=1)
