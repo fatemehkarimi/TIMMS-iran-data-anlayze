@@ -30,12 +30,20 @@ class BackgroundVariable:
 
 
 class Fields:
-    FINAL_SCORE = 'finalscore'
     ID_COUNTRY = 'IDCNTRY'
     ID_BOOK = 'IDBOOK'
     ID_SCHOOL = 'IDSCHOOL'
     ID_CLASS = 'IDCLASS'
     ID_STUDENT = 'IDSTUD'
+    FINAL_SCORE = 'finalscore'
+    FINAL_SCORE_ALGEBRA = 'finalscorealgebra'
+    FINAL_SCORE_DAT = 'finalscoredat'
+    FINAL_SCORE_GEO = 'finalscoregeo'
+    FINAL_SCORE_NUM = 'finalscorenum'
 
 ID_FIELDS = [Fields.ID_COUNTRY, Fields.ID_BOOK,
                 Fields.ID_SCHOOL, Fields.ID_CLASS, Fields.ID_STUDENT]
+
+SCORE_FIELDS = [Fields.FINAL_SCORE, Fields.FINAL_SCORE_ALGEBRA,
+                Fields.FINAL_SCORE_DAT, Fields.FINAL_SCORE_GEO,
+                Fields.FINAL_SCORE_NUM]
