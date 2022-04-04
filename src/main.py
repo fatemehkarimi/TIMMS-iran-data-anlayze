@@ -55,32 +55,43 @@ def write_as_json(object, filename):
     with open(filename, 'w') as f:
         json.dump(object, f, indent=4)
 
+def calc_correlated_to_score(df, attr_list, output_file):
+    result_score = calc_score_level_correlation(
+        df,
+        attr_list, dataConst.AttributeLevel.SCALE,
+        'spearman')
+
+    result_ordinal = calc_score_level_correlation(
+        df, attr_list,
+        dataConst.AttributeLevel.ORDINAL,
+        'spearman')
+
+    result_nominal = calc_score_level_correlation(
+        df, attr_list,
+        dataConst.AttributeLevel.NOMINAL,
+        corr_method=calc_chi_square)
+
+    result = {
+        "score": result_score,
+        "ordinal": result_ordinal,
+        "nominal": result_nominal
+    }
+
+    correlated_result = {
+        "score": filter_correlated_attributes(result_score),
+        "ordinal": filter_correlated_attributes(result_ordinal),
+        "nominal": filter_correlated_attributes(result_nominal)
+    }
+
+    write_as_json(result, "all_" + output_file)
+    write_as_json(correlated_result, output_file)
+
 
 def main(args):
     codebook = Codebook()
     attr_list = codebook.get_attribute_list()
     df = pd.read_excel(args.file)
-
-    result1 = calc_score_level_correlation(
-        df,
-        attr_list, dataConst.AttributeLevel.SCALE,
-        'spearman')
-
-    result2 = calc_score_level_correlation(
-        df, attr_list,
-        dataConst.AttributeLevel.ORDINAL,
-        'spearman')
-
-    result3 = calc_score_level_correlation(
-        df, attr_list,
-        dataConst.AttributeLevel.NOMINAL,
-        corr_method=calc_chi_square)
-
-    result = {**result1, **result2, **result3}
-    write_as_json(result, "result.json")
-    write_as_json(
-        filter_correlated_attributes(result),
-        "correlated_attributes.json")
+    calc_correlated_to_score(df, attr_list, args.output)
 
 
 if __name__ == "__main__":
@@ -89,8 +100,13 @@ if __name__ == "__main__":
     args = parser.add_argument(
         '--file',
         help='data file')
+
+    args = parser.add_argument(
+        '--output',
+        help='output file'
+    )
     args = parser.parse_args()
-    if not args.file:
+    if not args.file or not args.output:
         parser.print_help()
         sys.exit(1)
     main(args)
