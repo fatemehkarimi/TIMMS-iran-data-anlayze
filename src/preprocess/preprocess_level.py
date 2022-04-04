@@ -13,6 +13,9 @@ class LevelPreprocess:
     def visualize_correlation(self, df, attr_list):
         raise NotImplementedError
 
+    def get_correlation_matrix(self, df, attr_list):
+        raise NotImplementedError
+
     def plot_correlation(self, correlation, filename, labels=None):
         fig = plt.figure(figsize=(10.41, 7.29))
         ax = fig.add_subplot(111)
