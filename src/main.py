@@ -1,12 +1,13 @@
-import argparse
 import sys
 import json
-import pandas as pd
-import dataset.datasetConst as dataConst
+import argparse
 import numpy as np
-from scipy.stats import f_oneway
+import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.stats import f_oneway
+from scipy.stats import chi2_contingency
 from data.codebook import Codebook
+import dataset.datasetConst as dataConst
 
 def plot_correlation(correlation, filename, labels=None):
     fig = plt.figure(figsize=(10.41, 7.29))
@@ -22,25 +23,6 @@ def plot_correlation(correlation, filename, labels=None):
     plt.savefig(filename)
 
 
-def calc_score_nominal_correlation(df, attr_list):
-    col_names = [attr.variable for attr in attr_list
-                    if attr.level == dataConst.AttributeLevel.NOMINAL
-                    and attr.variable in df.columns
-                    and attr.variable not in dataConst.ID_FIELDS]
-
-    result = {}
-    for col in col_names:
-        tmp_df = df[[col, dataConst.Fields.FINAL_SCORE]]
-        category_group_list = \
-            tmp_df.groupby(dataConst.Fields.FINAL_SCORE)[col].apply(list)
-        stat, p = f_oneway(*category_group_list)
-        if p <= 0.05:
-            result[col] = 1
-        else:
-            result[col] = 0
-    return result
-
-
 def calc_score_level_correlation(df, attr_list, level, corr_method):
     col_names = [attr.variable for attr in attr_list
                 if attr.variable not in dataConst.ID_FIELDS
@@ -53,6 +35,25 @@ def calc_score_level_correlation(df, attr_list, level, corr_method):
         corr = tmp_df.corr(method=corr_method)
         result[col] = corr.iloc[0, 1]
     return result
+
+
+def calc_chi_square(col1, col2):
+    contingency = pd.crosstab(col1, col2)
+    stat, p, dof, expected = chi2_contingency(contingency)
+    return p <= 0.05
+
+
+def filter_correlated_attributes(correlations):
+    result = {}
+    for variable, corr in correlations.items():
+        if abs(corr) >= 0.2:
+            result[variable] = corr
+    return result
+
+
+def write_as_json(object, filename):
+    with open(filename, 'w') as f:
+        json.dump(object, f, indent=4)
 
 
 def main(args):
@@ -70,11 +71,16 @@ def main(args):
         dataConst.AttributeLevel.ORDINAL,
         'spearman')
 
-    result3 = calc_score_nominal_correlation(df, attr_list)
+    result3 = calc_score_level_correlation(
+        df, attr_list,
+        dataConst.AttributeLevel.NOMINAL,
+        corr_method=calc_chi_square)
 
     result = {**result1, **result2, **result3}
-    with open('result.json', 'w') as f:
-        json.dump(result, f, indent=4)
+    write_as_json(result, "result.json")
+    write_as_json(
+        filter_correlated_attributes(result),
+        "correlated_attributes.json")
 
 
 if __name__ == "__main__":
