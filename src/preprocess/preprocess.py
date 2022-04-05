@@ -1,4 +1,3 @@
-from warnings import filters
 import pandas as pd
 import dataset.datasetConst as dataConst
 from data.codebook import Codebook
@@ -100,6 +99,13 @@ def replace_final_score_values(df):
     return df
 
 
+def fill_null_scores(df):
+    for score_field in dataConst.SCORE_FIELDS:
+        med = df[score_field].median()
+        df[score_field] = df[score_field].fillna(med)
+    return df
+
+
 def main():
     codebook = Codebook()
     attr_list = codebook.get_attribute_list()
@@ -147,16 +153,17 @@ def main():
     # visualize_correlation(
         # df, attr_list, dataConst.AttributeLevel.NOMINAL, nominal_preprocess)
 
-    # filtered_df = filter_correlated_attributes(
-    #     filtered_df,
-    #     attr_list,
-    #     dataConst.AttributeLevel.NOMINAL,
-    #     nominal_preprocess)
+    filtered_df = filter_correlated_attributes(
+        filtered_df,
+        attr_list,
+        dataConst.AttributeLevel.NOMINAL,
+        nominal_preprocess)
 
     # visualize_nominal_scale_correlatin(filtered_df, attr_list)
     # filtered_df = filter_correlated_nominal_scale_attributes(filtered_df, attr_list)
 
     filtered_df = replace_final_score_values(filtered_df)
+    filtered_df = fill_null_scores(filtered_df)
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
     validated_df.to_excel("valid.xlsx")
