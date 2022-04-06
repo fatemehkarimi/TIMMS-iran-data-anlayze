@@ -1,68 +1,108 @@
-from attr import attr
+import sys
+import json
+import argparse
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
-
-import dataset.datasetConst as dataConst
+from sklearn.feature_selection import (
+    SelectKBest,
+    chi2,
+    f_classif,
+    VarianceThreshold
+)
 from data.codebook import Codebook
+import dataset.datasetConst as dataConst
 
 
-def main():
+def remove_constants(input, attr_list):
+    constant_filter = VarianceThreshold(threshold=0)
+    constant_filter.fit(input)
+    cols = constant_filter.get_support(indices=True)
+    remaining_df = input.iloc[:, cols]
+    
+    res = []
+    for x in input.columns:
+        if x not in remaining_df.columns:
+            res.append(x)
+    return remaining_df
+
+def find_top_categorical_features(df, attr_list, target):
+    categorical_colnames = [attr.variable for attr in attr_list
+                            if attr.variable in df.columns
+                                and attr.level in [
+                                    dataConst.AttributeLevel.NOMINAL,
+                                    dataConst.AttributeLevel.ORDINAL]]
+
+    x = df[categorical_colnames]
+    y = df[target]
+    x = remove_constants(x, attr_list)
+
+    selector = SelectKBest(chi2, k=len(categorical_colnames) // 3)
+    x_new = selector.fit_transform(x, y)
+    cols = selector.get_support(indices=True)
+    top_categorical_features = x.iloc[:, cols]
+    top_attributes = []
+    for attr_name in top_categorical_features.columns:
+        top_attributes.append(attr_name)
+    return top_attributes
+
+
+def find_top_scale_features(df, attr_list, target):
+    scale_colnames = [attr.variable for attr in attr_list
+                        if attr.variable in df.columns
+                            and (attr.level == dataConst.AttributeLevel.SCALE)]
+    x = df[scale_colnames]
+    y = df[target]
+    x = remove_constants(x, attr_list)
+
+    selector = SelectKBest(f_classif, k=len(scale_colnames) // 3)
+    x_new = selector.fit_transform(x, y)
+    cols = selector.get_support(indices=True)
+    top_scale_features = x.iloc[:, cols]
+    top_attributes = []
+    for attr_name in top_scale_features.columns:
+        top_attributes.append(attr_name)
+    return top_attributes
+
+
+def write_as_json(object, filename):
+    with open(filename, 'w') as f:
+        json.dump(object, f, indent=4)
+
+def main(args):
     codebook = Codebook()
-    df = pd.read_excel('./dataset/valid.xlsx')
+    attr_list = codebook.get_attribute_list()
+    df = pd.read_excel(args.file)
     df = df.drop(labels=dataConst.ID_FIELDS, axis=1)
 
-    attr_list = codebook.get_attribute_list()
-    attr_colnames = [attr.variable for attr in attr_list
-                        if attr.variable in df.columns
-                            and attr.level in [
-                                dataConst.AttributeLevel.SCALE,
-                                dataConst.AttributeLevel.ORDINAL,
-                                dataConst.AttributeLevel.NOMINAL]]
-        
-    x = df[attr_colnames].to_numpy().reshape((-1, len(attr_colnames)))
-    y = df['finalscore'].to_numpy()
+    top_categorical = find_top_categorical_features(df, attr_list, args.target)
+    top_scale = find_top_scale_features(df, attr_list, args.target)
 
-    x_train, x_test, y_train, y_test = \
-        train_test_split(x, y, test_size=0.2, random_state=0)
+    result = {
+        "categorical": top_categorical,
+        "scale": top_scale
+    }
 
-    scaler = StandardScaler()
-    x_train = scaler.fit_transform(x_train)
-
-    model = LogisticRegression(
-        solver='liblinear',
-        C=0.05,
-        multi_class='ovr',
-        random_state=0
-    ).fit(x_train, y_train)
-
-    x_test = scaler.transform(x_test)
-    y_pred = model.predict(x_test)
-
-    print(model.score(x_train, y_train))
-    print(model.score(x_test, y_test))
-
-    cm = confusion_matrix(y_test, y_pred)
-    fig, ax = plt.subplots(figsize=(8, 8))
-
-    ax.imshow(cm)
-    ax.grid(False)
-    ax.set_xlabel('Predicted outputs', fontsize=12, color='black')
-    ax.set_ylabel('Actual outputs', fontsize=12, color='black')
-    ax.xaxis.set(ticks=range(len(model.classes_)))
-    ax.yaxis.set(ticks=range(len(model.classes_)))
-    for i in range(len(model.classes_)):
-        for j in range(len(model.classes_)):
-            ax.text(j, i, cm[i, j], ha='center', va='center', color='white')
-    plt.savefig('result.png')
-    
+    write_as_json(result, args.output)
 
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='find most correlated attributes to student scores')
+    args = parser.add_argument(
+        '--file',
+        help='data file')
 
+    args = parser.add_argument(
+        '--output',
+        help='output file'
+    )
 
-if __name__  == "__main__":
-    main()
+    args = parser.add_argument(
+        '--target',
+        help='target attribute to find correlation with'
+    )
+    args = parser.parse_args()
+    if not args.file or not args.output or not args.target:
+        parser.print_help()
+        sys.exit(1)
+    main(args)

@@ -22,7 +22,6 @@ def normalize_categorical(df, attr_list):
 def main():
     codebook = Codebook()
     df = pd.read_excel('./dataset/valid.xlsx')
-    # df = df.drop(labels=dataConst.ID_FIELDS, axis=1)
 
     attr_list = codebook.get_attribute_list()
     attr_colnames = [attr.variable for attr in attr_list
@@ -56,13 +55,6 @@ def main():
 
     x_train, x_test, y_train, y_test = \
         train_test_split(x, y, test_size=0.1, random_state=0)
-    
-    # x_train = x
-    # y_train = y
-    # x_test = x
-    # y_test = y
-
-    # scaler = StandardScaler()
 
     model = LogisticRegression(
         solver='liblinear',
@@ -71,7 +63,6 @@ def main():
         random_state=0
     ).fit(x_train, y_train)
 
-    # x_test = scaler.transform(x_test)
     y_pred = model.predict(x_test)
 
     print(model.score(x_train, y_train))

@@ -16,6 +16,22 @@ class LevelPreprocess:
     def get_correlation_matrix(self, df, attr_list):
         raise NotImplementedError
 
+    def normalize_col(self, df, attr):
+        if attr.variable not in df.columns:
+            return df
+
+        max_value = df[attr.variable].max()
+        min_value = df[attr.variable].min()
+        if max_value != 1:
+            df[attr.variable] = \
+                (df[attr.variable] - min_value) / (max_value - 1)
+        return df
+
+    def normalize(self, df, attr_list):        
+        for attr in attr_list:
+            df = self.normalize_col(df, attr)
+        return df
+
     def plot_correlation(self, correlation, filename, labels=None):
         fig = plt.figure(figsize=(10.41, 7.29))
         ax = fig.add_subplot(111)

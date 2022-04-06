@@ -89,7 +89,7 @@ def filter_correlated_nominal_scale_attributes(df, attr_list):
     return df.drop(labels=list(redundent_attrs), axis=1)
 
 
-def replace_final_score_values(df):
+def replace_score_values(df):
     for score_field in dataConst.SCORE_FIELDS:
         df.loc[lambda x : x[score_field] == 'A', score_field] = 5
         df.loc[lambda x : x[score_field] == 'B', score_field] = 4
@@ -150,19 +150,7 @@ def main():
         dataConst.AttributeLevel.SCALE,
         scale_preprocess)
 
-    # visualize_correlation(
-        # df, attr_list, dataConst.AttributeLevel.NOMINAL, nominal_preprocess)
-
-    filtered_df = filter_correlated_attributes(
-        filtered_df,
-        attr_list,
-        dataConst.AttributeLevel.NOMINAL,
-        nominal_preprocess)
-
-    # visualize_nominal_scale_correlatin(filtered_df, attr_list)
-    # filtered_df = filter_correlated_nominal_scale_attributes(filtered_df, attr_list)
-
-    filtered_df = replace_final_score_values(filtered_df)
+    filtered_df = replace_score_values(filtered_df)
     filtered_df = fill_null_scores(filtered_df)
 
     validated_df = pd.concat([df[dataConst.ID_FIELDS], filtered_df], axis=1)
