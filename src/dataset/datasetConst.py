@@ -40,6 +40,7 @@ class Fields:
     FINAL_SCORE_DAT = 'finalscoredat'
     FINAL_SCORE_GEO = 'finalscoregeo'
     FINAL_SCORE_NUM = 'finalscorenum'
+    GENDER = 'BSBG01'
 
 ID_FIELDS = [Fields.ID_COUNTRY, Fields.ID_BOOK,
                 Fields.ID_SCHOOL, Fields.ID_CLASS, Fields.ID_STUDENT]

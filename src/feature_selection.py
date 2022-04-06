@@ -68,12 +68,15 @@ def write_as_json(object, filename):
     with open(filename, 'w') as f:
         json.dump(object, f, indent=4)
 
-def main(args):
-    codebook = Codebook()
-    attr_list = codebook.get_attribute_list()
-    df = pd.read_excel(args.file)
-    df = df.drop(labels=dataConst.ID_FIELDS, axis=1)
 
+def split_based_on_gender(df):
+    girls_df = df[df[dataConst.Fields.GENDER] == 1]
+    boys_df = df[df[dataConst.Fields.GENDER] == 2]
+
+    return girls_df, boys_df
+
+
+def get_top_features(df, attr_list, output_file):
     top_categorical = find_top_categorical_features(df, attr_list, args.target)
     top_scale = find_top_scale_features(df, attr_list, args.target)
 
@@ -82,7 +85,19 @@ def main(args):
         "scale": top_scale
     }
 
-    write_as_json(result, args.output)
+    write_as_json(result, output_file)
+
+def main(args):
+    codebook = Codebook()
+    attr_list = codebook.get_attribute_list()
+    df = pd.read_excel(args.file)
+    df = df.drop(labels=dataConst.ID_FIELDS, axis=1)
+
+    # girls_df, boys_df = split_based_on_gender(df)
+
+    get_top_features(df, attr_list, args.output)
+    # get_top_features(girls_df, attr_list, 'girls_' + args.output)
+    # get_top_features(boys_df, attr_list, 'boys_' + args.output)
 
 
 if __name__ == "__main__":
