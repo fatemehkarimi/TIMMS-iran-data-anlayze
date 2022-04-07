@@ -1,7 +1,7 @@
 import pandas as pd
 from preprocess_level import LevelPreprocess
 
-ALMOST_NULL_ATTRIBUTE_RATIO = 0.2
+ALMOST_NULL_ATTRIBUTE_RATIO = 0.5
 
 class OrdinalPreprocess(LevelPreprocess):
     def fill_missing_value(self, df, attr_list):

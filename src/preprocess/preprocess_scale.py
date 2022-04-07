@@ -5,7 +5,7 @@ from preprocess_level import LevelPreprocess
 from scipy import stats
 
 OUTLIER_FACTOR = 1.5
-ALMOST_NULL_ATTRIBUTE_RATIO = 0.3
+ALMOST_NULL_ATTRIBUTE_RATIO = 0.5
 
 class ScalePreprocess(LevelPreprocess):
     def fill_missing_value(self, df, attr_list):
